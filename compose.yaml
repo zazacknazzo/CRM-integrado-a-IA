@@ -1,0 +1,24 @@
+services:
+  atende:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .dev.vars
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      WHATSAPP_WEB_HOST: 0.0.0.0
+    ports:
+      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:8789:8789"
+    volumes:
+      - ./.docker-data/wrangler:/app/.wrangler
+      - ./.docker-data/whatsapp:/app/.data/whatsapp-web-auth
+      - ./backups:/app/backups
+      - ./data:/app/data:ro
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/auth/session').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
